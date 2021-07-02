@@ -24,7 +24,7 @@ from restaurant.models import restaurant, type_of_restaurant, dish_category, dis
 # login function
 def login(request):
     if 'restaurant_email' in request.session:
-        return redirect('re')
+        return redirect('restaurant_home')
     else:
         if request.method == "POST":
             restaurant_email = request.POST['restaurant_email']
@@ -64,11 +64,20 @@ def menu(request):
             dish_cat = request.POST['dish_category']
         else:
             res_id = restaurant.objects.get(restaurant_email = request.session['restaurant_email'])
-            dish_types = dish_type.objects.filter(rest_id=int(res_id.id))
+            dish_types = dish_type.objects.all()
             return render(request,'restaurant/menu.html',{'dish_type':dish_types})
     else:
         messages.error(request,'session expired ! Login Again')
         return  redirect(login)
+
+def add_dish_category(request):
+    if 'restaurant_email' in request.session:
+
+        return render(request,'restaurant/table.html')
+    else:
+        messages.error(request,'session expired ! Login Again')
+        return  redirect(login)
+
 
 
 def table(request):
