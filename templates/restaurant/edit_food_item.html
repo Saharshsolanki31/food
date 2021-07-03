@@ -1,0 +1,69 @@
+{% extends 'restaurant/base.html' %}
+
+{% block  content %}
+<br>
+    <div class="container">
+       <a href="{% url 'add_food_item' %}" class="btn btn-primary">Go Back</a>
+    </div>
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class=" shadow p-4 m-2" style="width: 95%;">
+
+                <h5 class="card-title text-center">Update Food Item</h5>
+                <form action="{% url 'update_food_item' %}" method="post">
+                    {% csrf_token %}
+
+                  <input type="hidden"name="id" value="{{ data.id }}" required>
+
+                  <div class="mb-3">
+                    <label class="form-label">Food Item Name </label>
+                    <input type="text" value="{{ data.item_name }}" class="form-control" name="item_name" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Food Item Price </label>
+                    <input type="number" value="{{ data.item_price }}" class="form-control" name="item_price" required>
+                  </div>
+
+                  <div class="mb-3 " >
+                    <label class="form-label">Upload Image </label>
+                      <div class="input-group ">
+                          <img src="{{ data.item_image.url }}" class="" style="margin-right:10px;height: 70px;width: 70px;">
+                          <input style="height: 36px;width: 50px;" type="file"class="form-control" name="item_image" >
+                      </div>
+                  </div>
+
+                <label class="form-lable pb-2">Update Dish Type</label>
+                   <select class="form-select mb-3" name="dish_type">
+                       {% for dish_type in dish_type %}
+                       {% ifequal dish_type.id data.dish_type.id %}
+                           <option value="{{ dish_type.id }}" selected>{{ dish_type.name }}</option>
+                           {% else %}
+                           <option value="{{ dish_type.id }}">{{ dish_type.name }}</option>
+                       {% endifequal %}
+                       {% endfor %}
+                   </select>
+
+
+                   <label class="form-lable pb-2">Update Dish Category</label>
+                   <select class="form-select mb-3" name="dish_category">
+                       {% for dish_category in dish_category %}
+                       {% ifequal dish_category.id data.dish_category.id %}
+                           <option value="{{ dish_category.id }}" selected>{{ dish_category.name }}</option>
+                           {% else %}
+                           <option value="{{ dish_category.id }}">{{ dish_category.name }}</option>
+                       {% endifequal %}
+                       {% endfor %}
+                   </select>
+
+
+                  <center><button type="submit" class="btn btn-warning">Update</button></center>
+                </form>
+              </div>
+
+        </div>
+    </div>
+
+
+{% endblock %}

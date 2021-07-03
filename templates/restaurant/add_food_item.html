@@ -1,0 +1,93 @@
+{% extends 'restaurant/base.html' %}
+
+{% block  content %}
+<br>
+    <div class="container">
+       <a href="{% url 'restaurant_menu' %}" class="btn btn-primary">Add Menu Item</a>
+    </div>
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-5 shadow p-4 m-2">
+
+                <h5 class="card-title text-center">Add Food Item</h5>
+                <form action="{% url 'add_food_item' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                <label class="form-label">Select Food Type</label>
+                 <select class="form-select mb-3" name="dish_type_id" required>
+                     {% for dish_type in dish_type %}
+                     <option value="{{ dish_type.id }}">{{ dish_type.name }}</option>
+                     {% endfor %}
+                 </select>
+
+                <label class="form-label">Select Food Category </label>
+                <select class="form-select mb-3" name="dish_category_id" required>
+                     {% for dish_category in dish_category %}
+                     <option value="{{ dish_category.id }}">{{ dish_category.name }}</option>
+                     {% endfor %}
+                 </select>
+
+
+                  <div class="mb-3">
+                    <label class="form-label">Enter Food Item Name </label>
+                    <input type="text" class="form-control" name="item_name" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Upload Food Image</label>
+                    <input type="file" class="form-control" name="food_image" required>
+                  </div>
+
+
+                 <div class="mb-3">
+                    <label class="form-label">Enter Item Price</label>
+                    <input type="number" class="form-control" name="item_price" required>
+                  </div>
+
+
+
+                  <center><button type="submit" class="btn btn-primary">Add</button></center>
+                </form>
+              </div>
+
+
+            <div class="col-lg-6 shadow  m-2" style="width: 90%;overflow: scroll;">
+
+               <table class="table table-striped" style="">
+                  <thead class="bg-warning ">
+                    <tr>
+                      <th scope="col">ID</th>
+                      <th scope="col">Item Name</th>
+                      <th scope="col">Price</th>
+                      <th scope="col">Image</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Category</th>
+                      <th scope="col">Action </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  {%  for food_data in food_data %}
+                    <tr>
+                      <td>{{ food_data.id }}</td>
+                      <td>{{ food_data.item_name }}</td>
+                      <td>RS.{{ food_data.item_price }}</td>
+                      <td><img src="{{ food_data.item_image.url }}" style="height: 40px;width: 40px;"></td>
+                      <td>{{ food_data.dish_type }}</td>
+                      <td>{{ food_data.dish_category }}</td>
+                        <td>
+                        <a href="{% url 'edit_food_item' id=food_data.id %}" class="btn btn-warning">edit</a>
+                        &nbsp;
+                        <a href="{% url 'delete_food_item' id=food_data.id %}" class="btn btn-danger">delete</a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+
+                  </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

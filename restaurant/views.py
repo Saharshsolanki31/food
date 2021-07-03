@@ -18,7 +18,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import get_template
 
 from food import settings
-from restaurant.models import restaurant, type_of_restaurant, dish_category, dish_type
+from restaurant.models import restaurant, type_of_restaurant, dish_category, dish_type, food_item
 
 
 # login function
@@ -65,18 +65,152 @@ def menu(request):
         else:
             res_id = restaurant.objects.get(restaurant_email = request.session['restaurant_email'])
             dish_types = dish_type.objects.all()
-            return render(request,'restaurant/menu.html',{'dish_type':dish_types})
+            if 'search' in request.GET:
+                dish_cat = dish_category.objects.filter(name__icontains=request.GET['search'],rest_id=res_id)
+            else:
+                dish_cat = dish_category.objects.filter(rest_id=res_id)
+            return render(request,'restaurant/menu.html',{'dish_type':dish_types,'dish_cat':dish_cat})
     else:
         messages.error(request,'session expired ! Login Again')
         return  redirect(login)
+
+
+
+def add_food_item(request):
+    if 'restaurant_email' in request.session:
+        if request.method == 'POST':
+            res_id = restaurant.objects.get(restaurant_email=request.session['restaurant_email'])
+            item_name =request.POST['item_name']
+            food_image = request.FILES['food_image']
+            item_price = request.POST['item_price']
+            item_dish_category = dish_category.objects.get(id=int(request.POST['dish_category_id']))
+            dish_type_item = dish_type.objects.get(id=int(request.POST['dish_type_id']))
+            if food_item.objects.filter(item_name=item_name,restaurant_id=res_id,item_price=item_price,dish_category=item_dish_category,dish_type=dish_type_item).exists():
+                messages.success(request, 'This Food is Already Exists !')
+                return redirect(add_food_item)
+            else:
+                data = food_item(item_name=item_name,restaurant_id=res_id,item_image=food_image,item_price=item_price,dish_category=item_dish_category,dish_type=dish_type_item)
+                data.save()
+                messages.success(request,'Food item added succssfully')
+                return redirect(add_food_item)
+        else:
+            res_id = restaurant.objects.get(restaurant_email=request.session['restaurant_email'])
+            dish_types = dish_type.objects.all()
+            dish_categorys = dish_category.objects.filter(rest_id = res_id)
+            items_data = food_item.objects.filter(restaurant_id = res_id)
+            return render(request,'restaurant/add_food_item.html',{'dish_type':dish_types,'dish_category':dish_categorys,'food_data':items_data})
+    else:
+        messages.error(request,'session expired ! Login Again')
+        return  redirect(login)
+
+
 
 def add_dish_category(request):
     if 'restaurant_email' in request.session:
-
-        return render(request,'restaurant/table.html')
+        if request.method == 'POST':
+            res_id = restaurant.objects.get(restaurant_email=request.session['restaurant_email'])
+            dish_category_name =request.POST['dish_category']
+            if dish_category.objects.filter(name=dish_category_name,rest_id=res_id).exists():
+                messages.success(request, 'Menu name Already Exists !')
+                return redirect(menu)
+            else:
+                data = dish_category(name=dish_category_name,rest_id=res_id)
+                data.save()
+                messages.success(request,'Added Successfully')
+                return redirect(menu)
     else:
         messages.error(request,'session expired ! Login Again')
         return  redirect(login)
+
+
+def edit_menu_item(request,id):
+    if 'restaurant_email' in request.session:
+            res_id = restaurant.objects.get(restaurant_email=request.session['restaurant_email'])
+            dish_categorys = dish_category.objects.get(id=id)
+            return render(request,'restaurant/edit_menu_item.html',{'data':dish_categorys})
+    else:
+        messages.error(request,'session expired ! Login Again')
+        return  redirect(login)
+
+
+def update_menu_item(request):
+    if 'restaurant_email' in request.session:
+        if request.method == "POST":
+            # res_id = restaurant.objects.get(restaurant_email=request.session['restaurant_email'])
+            id =request.POST['id']
+            dish = request.POST['dish_category']
+            data =dish_category.objects.get(id=id)
+            data.name=dish
+            data.save()
+            messages.success(request,'Update sucessfully !')
+            return redirect(menu)
+        else:
+            return redirect(menu)
+    else:
+        messages.error(request,'session expired ! Login Again')
+        return  redirect(login)
+
+
+def delete_menu_item(request,id):
+    if 'restaurant_email' in request.session:
+        dish_categorys = dish_category.objects.get(id=id)
+        dish_categorys.delete()
+        messages.success(request,'Deleted Successfully')
+        return redirect(menu)
+    else:
+        messages.error(request,'session expired ! Login Again')
+        return  redirect(login)
+
+
+
+def edit_food_item(request,id):
+    if 'restaurant_email' in request.session:
+            res_id = restaurant.objects.get(restaurant_email=request.session['restaurant_email'])
+            food_data = food_item.objects.get(id=id)
+            dish_types = dish_type.objects.all()
+            dish_cat = dish_category.objects.filter(rest_id=res_id)
+            return render(request,'restaurant/edit_food_item.html',{'data':food_data,'dish_type':dish_types,'dish_category':dish_cat})
+    else:
+        messages.error(request,'session expired ! Login Again')
+        return  redirect(login)
+
+
+def update_food_item(request):
+    if 'restaurant_email' in request.session:
+        if request.method == "POST":
+            id=request.POST['id']
+            item_name = request.POST['item_name']
+            item_price = request.POST['item_price']
+            item_dish_type = dish_type.objects.get(id=request.POST['dish_type'])
+            item_dish_category = dish_category.objects.get(id = request.POST['dish_category'])
+            res_id = restaurant.objects.get(restaurant_email=request.session['restaurant_email'])
+            food_data = food_item.objects.get(id=id)
+            food_data.item_name = item_name
+            food_data.item_price = item_price
+            food_data.dish_type = item_dish_type
+            food_data.dish_category=item_dish_category
+            if 'item_image' in request.FILES:
+                food_data.item_image=request.FILES['item_image']
+            food_data.save()
+            messages.success(request,'Updated Successfully')
+            return redirect(add_food_item)
+        else:
+            return redirect(add_food_item)
+    else:
+        messages.error(request,'session expired ! Login Again')
+        return  redirect(login)
+
+
+def delete_food_item(request,id):
+    if 'restaurant_email' in request.session:
+        data = food_item.objects.get(id=id)
+        data.delete()
+        messages.success(request,'Deleted Successfully')
+        return redirect(add_food_item)
+    else:
+        messages.error(request,'session expired ! Login Again')
+        return  redirect(login)
+
 
 
 

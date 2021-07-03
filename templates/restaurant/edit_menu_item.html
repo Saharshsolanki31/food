@@ -1,0 +1,31 @@
+{% extends 'restaurant/base.html' %}
+
+{% block  content %}
+<br>
+    <div class="container">
+       <a href="{% url 'restaurant_menu' %}" class="btn btn-primary">Go Back</a>
+    </div>
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class=" shadow p-4 m-2">
+
+                <h5 class="card-title text-center">Update Dish Category</h5>
+                <form action="{% url 'update_menu_item' %}" method="post">
+                    {% csrf_token %}
+
+                     <input type="hidden"name="id" value="{{ data.id }}" required>
+
+                  <div class="mb-3">
+                    <label class="form-label">Enter Dish Category </label>
+                    <input type="text" value="{{ data.name }}" class="form-control" name="dish_category" required>
+                  </div>
+                  <center><button type="submit" class="btn btn-warning">Update</button></center>
+                </form>
+              </div>
+
+        </div>
+    </div>
+
+
+{% endblock %}
